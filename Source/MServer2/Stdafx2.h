@@ -15,6 +15,7 @@ struct ServerInfo
 	short MaxUsers;
 	bool GameStarted;
 	bool PasswordProtected;
+	float TimeOut;
 
 	ServerInfo()
 	{

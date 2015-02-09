@@ -67,6 +67,10 @@ Server::Server()
 	customHook = std::bind(&Server::OnGetServerInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("GET_SERVER_LIST", customHook);
 	SDL_Log("%s \tHooking custom network hook \"GET_SERVER_LIST\"", GetLocalTime().c_str());
+
+	customHook = std::bind(&Server::OnPingServer, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	m_server.AddNetworkHook("PING_SERVER", customHook);
+	SDL_Log("%s \tHooking custom network hook \"PING_SERVER\"", GetLocalTime().c_str());
 }
 
 Server::~Server()
@@ -86,6 +90,18 @@ bool Server::Update(float _dt)
 	
 	while (m_server.PopAndExecutePacket() > 0)	{}
 
+	for (auto it = m_serverInfo.begin(); it != m_serverInfo.end();)
+	{
+		it->second.TimeOut += _dt;
+		if (it->second.TimeOut > 5.f)
+		{
+			m_database.RemoveFromDatabase(m_serverInfo[it->second.IpAddress]);
+			m_serverInfo.erase(it++);
+		}
+		else
+			++it;
+	}
+
 	return true;
 }
 
@@ -99,6 +115,10 @@ bool Server::Stop()
 void Server::OnConnectedToServer(Network::NetConnection _nc, const char* _message)
 {
 	SDL_Log("%s \t%s:%i: CONNECTED_TO_SERVER\n",GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
+	{
+		m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;
+	}
 }
 
 void Server::OnDisconnectedFromServer(Network::NetConnection _nc, const char* _message)
@@ -115,11 +135,6 @@ void Server::OnDisconnectedFromServer(Network::NetConnection _nc, const char* _m
 void Server::OnTimedOutFromServer(Network::NetConnection _nc, const char* _message)
 {
 	SDL_Log("%s \t%s:%i: TIMED_OUT_FROM_SERVER\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
-
-	m_database.RemoveFromDatabase(m_serverInfo[_nc.GetIpAddress()]);
-
-	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
-		m_serverInfo.erase(_nc.GetIpAddress());
 }
 
 void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
@@ -133,6 +148,7 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 	m_serverInfo[_nc.GetIpAddress()].IpAddress = _nc.GetIpAddress();
 	m_serverInfo[_nc.GetIpAddress()].Port = port;
 	m_serverInfo[_nc.GetIpAddress()].PasswordProtected = pwProtected;
+	m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;
 
 	if (std::strcmp(_nc.GetIpAddress(), "127.0.0.1") == 0)
 		m_serverInfo[_nc.GetIpAddress()].Name = "LocalHost";
@@ -294,6 +310,10 @@ void Server::OnGetServerInformation(Network::PacketHandler* _ph, uint64_t& _id, 
 
 }
 
+void Server::OnPingServer(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
+{
+	SDL_Log("%s \t%s:%i: PING_SERVER\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+}
 
 std::string Server::GetLocalTime()
 {
