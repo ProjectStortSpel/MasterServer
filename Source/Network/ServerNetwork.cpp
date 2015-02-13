@@ -22,6 +22,12 @@ void ServerNetwork::NetPasswordAttempt(PacketHandler* _packetHandler, uint64_t& 
 		uint64_t id2 = _packetHandler->StartPack(NetTypeMessageId::ID_CONNECTION_ACCEPTED);
 		auto newPacket = _packetHandler->EndPack(id2);
 		m_connectedClientsLock->lock();
+		if (!(*m_connectedClients)[_connection])
+		{
+			m_connectedClients->erase(_connection);
+			m_connectedClientsLock->unlock();
+			return;
+		}
 		(*m_connectedClients)[_connection]->SetActive(2);
 		m_connectedClientsNC.push_back(_connection);
 		m_connectedClientsLock->unlock();
@@ -275,9 +281,11 @@ bool ServerNetwork::Stop()
 	}
 
 
+	m_connectedClientsLock->lock();
 	for (auto it = m_connectedClients->begin(); it != m_connectedClients->end(); ++it)
 		SAFE_DELETE(it->second);
 	m_connectedClients->clear();
+	m_connectedClientsLock->unlock();
 
 	m_currentIntervallCounter->clear();
 	m_currentTimeOutIntervall->clear();

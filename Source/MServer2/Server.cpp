@@ -93,7 +93,7 @@ bool Server::Update(float _dt)
 	for (auto it = m_serverInfo.begin(); it != m_serverInfo.end();)
 	{
 		it->second.TimeOut += _dt;
-		if (it->second.TimeOut > 5.f)
+		if (it->second.TimeOut > 20.f)
 		{
 			m_database.RemoveFromDatabase(m_serverInfo[it->second.IpAddress]);
 			m_serverInfo.erase(it++);
@@ -141,6 +141,7 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 {
 	SDL_Log("%s \t%s:%i: ADD_TO_DATABASE\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
 
+	std::string name = _ph->ReadString(_id);
 	int port = _ph->ReadInt(_id);
 	bool pwProtected = _ph->ReadByte(_id);
 
@@ -150,30 +151,36 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 	m_serverInfo[_nc.GetIpAddress()].PasswordProtected = pwProtected;
 	m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;
 
-	if (std::strcmp(_nc.GetIpAddress(), "127.0.0.1") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "LocalHost";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.44") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Server";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.5") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Erik";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.29") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Niklas";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.48") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Marcus";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.57") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Christian";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.128") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Pontus";
-	else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.100") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Anders";
-	else if (std::strcmp(_nc.GetIpAddress(), "193.11.186.9") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Eriks Iphone 6";
-	else if (std::strcmp(_nc.GetIpAddress(), "192.168.105.3") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Eriks Iphone 4";
-	else if (std::strcmp(_nc.GetIpAddress(), "193.11.185.227") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Johannes";
-	else if (std::strcmp(_nc.GetIpAddress(), "193.11.187.80") == 0)
-		m_serverInfo[_nc.GetIpAddress()].Name = "Carl";
+	if (name.compare("DefaultName") == 0)
+	{
+
+		if (std::strcmp(_nc.GetIpAddress(), "127.0.0.1") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "LocalHost";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.44") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Server";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.5") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Erik";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.29") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Niklas";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.48") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Marcus";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.57") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Christian";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.128") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Pontus";
+		else if (std::strcmp(_nc.GetIpAddress(), "194.47.150.100") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Anders";
+		else if (std::strcmp(_nc.GetIpAddress(), "193.11.186.9") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Eriks Iphone 6";
+		else if (std::strcmp(_nc.GetIpAddress(), "192.168.105.3") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Eriks Iphone 4";
+		else if (std::strcmp(_nc.GetIpAddress(), "193.11.185.227") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Johannes";
+		else if (std::strcmp(_nc.GetIpAddress(), "193.11.187.80") == 0)
+			m_serverInfo[_nc.GetIpAddress()].Name = "Carl";
+	}
+	else
+		m_serverInfo[_nc.GetIpAddress()].Name = name;
 
 	m_database.AddToDatabase(m_serverInfo[_nc.GetIpAddress()]);
 }
@@ -237,9 +244,11 @@ void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 {
 	SDL_Log("%s \t%s:%i: MAX_PLAYER_COUNT_INCREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
 
+	int maxPlayers = _ph->ReadInt(_id);
+
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
-		m_serverInfo[_nc.GetIpAddress()].MaxUsers += 1;
+		m_serverInfo[_nc.GetIpAddress()].MaxUsers = maxPlayers;
 		m_database.SetMaxUsers(m_serverInfo[_nc.GetIpAddress()]);
 	}
 }
