@@ -52,6 +52,10 @@ Server::Server()
 	m_server.AddNetworkHook("MAX_PLAYER_COUNT_INCREASED", customHook);
 	SDL_Log("%s \tHooking custom network hook \"MAX_PLAYER_COUNT_INCREASED\"", GetLocalTime().c_str());
 
+	customHook = std::bind(&Server::OnMaxPlayerCountChanged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	m_server.AddNetworkHook("MAX_PLAYER_COUNT_CHANGED", customHook);
+	SDL_Log("%s \tHooking custom network hook \"MAX_PLAYER_COUNT_CHANGED\"", GetLocalTime().c_str());
+
 	customHook = std::bind(&Server::OnGameHasStarted, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("GAME_STARTED", customHook);
 	SDL_Log("%s \tHooking custom network hook \"GAME_STARTED\"", GetLocalTime().c_str());
@@ -141,9 +145,9 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 {
 	SDL_Log("%s \t%s:%i: ADD_TO_DATABASE\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
 
-	std::string name = _ph->ReadString(_id);
 	int port = _ph->ReadInt(_id);
 	bool pwProtected = _ph->ReadByte(_id);
+	char* name = _ph->ReadString(_id);
 
 	m_serverInfo[_nc.GetIpAddress()] = ServerInfo();
 	m_serverInfo[_nc.GetIpAddress()].IpAddress = _nc.GetIpAddress();
@@ -151,7 +155,7 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 	m_serverInfo[_nc.GetIpAddress()].PasswordProtected = pwProtected;
 	m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;
 
-	if (name.compare("DefaultName") == 0)
+	if ( !name || std::strcmp(name, "DefaultName") == 0 || strlen(name) == 0)
 	{
 
 		if (std::strcmp(_nc.GetIpAddress(), "127.0.0.1") == 0)
@@ -244,6 +248,19 @@ void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 {
 	SDL_Log("%s \t%s:%i: MAX_PLAYER_COUNT_INCREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
 
+	//int maxPlayers = _ph->ReadInt(_id);
+
+	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
+	{
+		m_serverInfo[_nc.GetIpAddress()].MaxUsers += 1;
+		m_database.SetMaxUsers(m_serverInfo[_nc.GetIpAddress()]);
+	}
+}
+
+void Server::OnMaxPlayerCountChanged(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
+{
+	SDL_Log("%s \t%s:%i: MAX_PLAYER_COUNT_CHANGED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+
 	int maxPlayers = _ph->ReadInt(_id);
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
@@ -252,6 +269,7 @@ void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 		m_database.SetMaxUsers(m_serverInfo[_nc.GetIpAddress()]);
 	}
 }
+
 
 void Server::OnGameHasStarted(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {

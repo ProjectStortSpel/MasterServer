@@ -35,6 +35,7 @@ private:
 
 	void OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
 	void OnMaxPlayerCountDecreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
+	void OnMaxPlayerCountChanged(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
 
 	void OnIsPasswordProtected(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
 	void OnGameHasStarted(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
