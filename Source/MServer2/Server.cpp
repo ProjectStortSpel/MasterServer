@@ -1,8 +1,11 @@
 #include "Server.h"
+#include "Logger/Managers/Logger.h"
 #include <sstream>
 
 Server::Server()
 {
+	Logger::GetInstance().AddGroup("Network");
+
 	Network::NET_DEBUG = 1;
 	m_server.SetServerPassword("DefaultMasterPassword");
 	m_server.SetIncomingPort(5509);
@@ -12,65 +15,69 @@ Server::Server()
 	Network::NetEvent  hook;
 	hook = std::bind(&Server::OnConnectedToServer, this, std::placeholders::_1, std::placeholders::_2);
 	m_server.SetOnPlayerConnected(hook);
-	SDL_Log("%s \tHooking network hook \"ON_CONNECTED_TO_SERVER\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking network hook \"ON_CONNECTED_TO_SERVER\"", LogSeverity::Info);
 
 	hook = std::bind(&Server::OnDisconnectedFromServer, this, std::placeholders::_1, std::placeholders::_2);
 	m_server.SetOnPlayerDisconnected(hook);
-	SDL_Log("%s \tHooking network hook \"ON_DISCONNECTED_FROM_SERVER\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking network hook \"ON_DISCONNECTED_FROM_SERVER\"", LogSeverity::Info);
 
 	hook = std::bind(&Server::OnTimedOutFromServer, this, std::placeholders::_1, std::placeholders::_2);
 	m_server.SetOnPlayerTimedOut(hook);
-	SDL_Log("%s \tHooking network hook \"ON_TIMED_OUT_FROM_SERVER\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking network hook \"ON_TIMED_OUT_FROM_SERVER\"", LogSeverity::Info);
 
 	Network::NetMessageHook customHook;
 
 	customHook = std::bind(&Server::OnAddToDatabase, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("ADD_TO_DATABASE", customHook);
-	SDL_Log("%s \tHooking custom network hook \"ADD_TO_DATABASE\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"ADD_TO_DATABASE\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnRemoveFromDatabase, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("REMOVE_FROM_DATABASE", customHook);
-	SDL_Log("%s \tHooking custom network hook \"REMOVE_FROM_DATABASE\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"REMOVE_FROM_DATABASE\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnPlayerCountIncreased, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("PLAYER_COUNT_INCREASED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"PLAYER_COUNT_INCREASED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"PLAYER_COUNT_INCREASED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnPlayerCountDecreased, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("PLAYER_COUNT_DECREASED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"PLAYER_COUNT_DECREASED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"PLAYER_COUNT_DECREASED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnSpectatorCountIncreased, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("SPECTATOR_COUNT_INCREASED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"SPECTATOR_COUNT_INCREASED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"SPECTATOR_COUNT_INCREASED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnSpectatorCountDecreased, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("SPECTATOR_COUNT_DECREASED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"SPECTATOR_COUNT_DECREASED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"SPECTATOR_COUNT_DECREASED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnMaxPlayerCountIncreased, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("MAX_PLAYER_COUNT_INCREASED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"MAX_PLAYER_COUNT_INCREASED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"MAX_PLAYER_COUNT_INCREASED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnGameHasStarted, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("GAME_STARTED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"GAME_STARTED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"GAME_STARTED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnIsPasswordProtected, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("IS_PASSWORD_PROTECTED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"IS_PASSWORD_PROTECTED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"IS_PASSWORD_PROTECTED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnSetServerPort, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("SET_SERVER_PORT", customHook);
-	SDL_Log("%s \tHooking custom network hook \"SET_SERVER_PORT\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"SET_SERVER_PORT\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnGetServerInformation, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("GET_SERVER_LIST", customHook);
-	SDL_Log("%s \tHooking custom network hook \"GET_SERVER_LIST\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"GET_SERVER_LIST\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnPingServer, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("PING_SERVER", customHook);
-	SDL_Log("%s \tHooking custom network hook \"PING_SERVER\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"PING_SERVER\"", LogSeverity::Info);
+
+
+	
+
 }
 
 Server::~Server()
@@ -114,7 +121,7 @@ bool Server::Stop()
 
 void Server::OnConnectedToServer(Network::NetConnection _nc, const char* _message)
 {
-	SDL_Log("%s \t%s:%i: CONNECTED_TO_SERVER\n",GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: CONNECTED_TO_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
 		m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;
@@ -123,7 +130,7 @@ void Server::OnConnectedToServer(Network::NetConnection _nc, const char* _messag
 
 void Server::OnDisconnectedFromServer(Network::NetConnection _nc, const char* _message)
 {
-	SDL_Log("%s \t%s:%i: DISCONNECTED_FROM_SERVER\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: DISCONNECTED_FROM_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	//if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	//{
@@ -134,12 +141,12 @@ void Server::OnDisconnectedFromServer(Network::NetConnection _nc, const char* _m
 
 void Server::OnTimedOutFromServer(Network::NetConnection _nc, const char* _message)
 {
-	SDL_Log("%s \t%s:%i: TIMED_OUT_FROM_SERVER\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: TIMED_OUT_FROM_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 }
 
 void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: ADD_TO_DATABASE\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: ADD_TO_DATABASE\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	std::string name = _ph->ReadString(_id);
 	int port = _ph->ReadInt(_id);
@@ -187,7 +194,7 @@ void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network
 
 void Server::OnRemoveFromDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: REMOVE_FROM_DATABASE\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: REMOVE_FROM_DATABASE\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -198,7 +205,7 @@ void Server::OnRemoveFromDatabase(Network::PacketHandler* _ph, uint64_t& _id, Ne
 
 void Server::OnPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: PLAYER_COUNT_INCREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: PLAYER_COUNT_INCREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -209,7 +216,7 @@ void Server::OnPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, 
 
 void Server::OnPlayerCountDecreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: PLAYER_COUNT_DECREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: PLAYER_COUNT_DECREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -220,7 +227,7 @@ void Server::OnPlayerCountDecreased(Network::PacketHandler* _ph, uint64_t& _id, 
 
 void Server::OnSpectatorCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: SPECTATOR_COUNT_INCREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: SPECTATOR_COUNT_INCREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -231,7 +238,7 @@ void Server::OnSpectatorCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 
 void Server::OnSpectatorCountDecreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: SPECTATOR_COUNT_DECREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: SPECTATOR_COUNT_DECREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -242,7 +249,7 @@ void Server::OnSpectatorCountDecreased(Network::PacketHandler* _ph, uint64_t& _i
 
 void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: MAX_PLAYER_COUNT_INCREASED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: MAX_PLAYER_COUNT_INCREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	int maxPlayers = _ph->ReadInt(_id);
 
@@ -255,7 +262,7 @@ void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 
 void Server::OnGameHasStarted(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: GAME_STARTED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: GAME_STARTED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -268,7 +275,7 @@ void Server::OnGameHasStarted(Network::PacketHandler* _ph, uint64_t& _id, Networ
 
 void Server::OnIsPasswordProtected(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: IS_PASSWORD_PROTECTED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: IS_PASSWORD_PROTECTED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -281,7 +288,7 @@ void Server::OnIsPasswordProtected(Network::PacketHandler* _ph, uint64_t& _id, N
 
 void Server::OnSetServerPort(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: SET_SERVER_PORT\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: SET_SERVER_PORT\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
@@ -295,7 +302,7 @@ void Server::OnSetServerPort(Network::PacketHandler* _ph, uint64_t& _id, Network
 void Server::OnGetServerInformation(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
 	
-	SDL_Log("%s \t%s:%i: GET_SERVER_LIST\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: GET_SERVER_LIST\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	int noServers = m_serverInfo.size();
 
@@ -321,7 +328,7 @@ void Server::OnGetServerInformation(Network::PacketHandler* _ph, uint64_t& _id, 
 
 void Server::OnPingServer(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: PING_SERVER\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: PING_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 }
 
 std::string Server::GetLocalTime()

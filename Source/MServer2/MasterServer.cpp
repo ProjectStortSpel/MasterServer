@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
 	Utility::FrameCounter frameCounter;
 
-	SDL_Log("Starting MasterServer");
+	Network::DebugLog("Starting MasterServer", LogSeverity::Info);
 
 	if (!g_server.Start())
 		SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "Failed to start server. Exiting application");
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 		frameCounter.Tick();
 	}
 
-	SDL_Log("Stopping MasterServer");
+	Network::DebugLog("Stopping MasterServer", LogSeverity::Info);
 	g_server.Stop();
 	return 0;
 }
