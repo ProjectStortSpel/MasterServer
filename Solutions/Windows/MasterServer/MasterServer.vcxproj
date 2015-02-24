@@ -62,7 +62,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;Network_x86d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;Network_x86d.lib;Logger_x86d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
     <PostBuildEvent>

@@ -19,35 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Network\BaseNetwork.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\ClientNetwork.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\ISocket.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\LinSocket.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\NetConnection.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\Packet.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\PacketHandler.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\ServerNetwork.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\Stdafx.cpp" />
-    <ClCompile Include="..\..\..\Source\Network\WinSocket.cpp" />
+    <ClCompile Include="..\..\..\Source\Logger\Managers\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Source\Network\BaseNetwork.h" />
-    <ClInclude Include="..\..\..\Source\Network\ClientNetwork.h" />
-    <ClInclude Include="..\..\..\Source\Network\ISocket.h" />
-    <ClInclude Include="..\..\..\Source\Network\LinSocket.h" />
-    <ClInclude Include="..\..\..\Source\Network\NetConnection.h" />
-    <ClInclude Include="..\..\..\Source\Network\NetTypeMessageID.h" />
-    <ClInclude Include="..\..\..\Source\Network\Network.h" />
-    <ClInclude Include="..\..\..\Source\Network\Packet.h" />
-    <ClInclude Include="..\..\..\Source\Network\PacketHandler.h" />
-    <ClInclude Include="..\..\..\Source\Network\ServerNetwork.h" />
-    <ClInclude Include="..\..\..\Source\Network\Stdafx.h" />
-    <ClInclude Include="..\..\..\Source\Network\WinSocket.h" />
+    <ClInclude Include="..\..\..\Source\Logger\Managers\Logger.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{76B48B4A-FB1E-417A-87E6-70CB865CCC09}</ProjectGuid>
+    <ProjectGuid>{E15310EA-512E-4A1E-BC27-6915FDC3B665}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>SampleDLL</RootNamespace>
+    <RootNamespace>Logger</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -130,16 +110,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SAMPLEDLL_EXPORTS;_RAKNET_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LOGGER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Source\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>$(SolutionDir)..\..\Externals\lib\Windows\$(PlatformTarget)\GameLibs\$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;ws2_32.lib;Logger_$(PlatformTarget)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;FileSystem_$(PlatformTarget)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
       <Profile>true</Profile>
@@ -151,24 +130,19 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SAMPLEDLL_EXPORTS;_RAKNET_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;LOGGER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Source\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>$(SolutionDir)..\..\Externals\lib\Windows\$(PlatformTarget)\GameLibs\$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;ws2_32.lib;Logger_$(PlatformTarget)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;FileSystem_$(PlatformTarget)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
       <Profile>true</Profile>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -178,10 +152,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SAMPLEDLL_EXPORTS;_RAKNET_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LOGGER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Source\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,7 +162,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(SolutionDir)..\..\Externals\lib\Windows\$(PlatformTarget)\GameLibs\$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;ws2_32.lib;Logger_$(PlatformTarget).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;FileSystem_$(PlatformTarget).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
@@ -202,10 +175,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SAMPLEDLL_EXPORTS;_RAKNET_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;LOGGER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Source\</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -213,7 +185,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(SolutionDir)..\..\Externals\lib\Windows\$(PlatformTarget)\GameLibs\$(TargetName).lib</ImportLibrary>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;ws2_32.lib;Logger_$(PlatformTarget).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;OpenGL32.lib;glew32.lib;FileSystem_$(PlatformTarget).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ProfileGuidedDatabase>$(IntDir)$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
