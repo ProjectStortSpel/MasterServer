@@ -146,8 +146,6 @@ bool ClientNetwork::Connect()
 	return true;
 }
 
-
-
 void ClientNetwork::Disconnect()
 {
 	if (!*m_connected)
@@ -164,7 +162,8 @@ void ClientNetwork::Disconnect()
 
 	m_socket->ShutdownSocket(1);
 
-	m_receiveThread->join();
+	if(m_receiveThread->joinable())
+		m_receiveThread->join();
 
 	NetConnection nc = m_socket->GetNetConnection();
 	TriggerEvent(m_onDisconnectedFromServer, nc, 0);
@@ -306,6 +305,8 @@ void ClientNetwork::ResetNetworkEvents()
 	m_onRemotePlayerTimedOut->clear();
 	m_onRemotePlayerKicked->clear();
 	m_onRemotePlayerBanned->clear();
+
+	Clear();
 }
 
 void ClientNetwork::NetPasswordInvalid(PacketHandler* _packetHandler, uint64_t& _id, NetConnection& _connection)
