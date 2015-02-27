@@ -140,7 +140,7 @@ bool ServerNetwork::Stop()
 	if (SDL_LockMutex(m_connectedClientsLock) == 0)
 	{
 		for (auto it = m_connectedClients->begin(); it != m_connectedClients->end(); ++it)
-			it->second->ShutdownSocket(2);
+			it->second->ShutdownSocket(1);
 
 		SDL_UnlockMutex(m_connectedClientsLock);
 	}
@@ -148,12 +148,16 @@ bool ServerNetwork::Stop()
 		DebugLog("Failed to lock connectedClients. Error: %s.", LogSeverity::Error, SDL_GetError());
 
 	for (auto it = m_receivePacketThreads->begin(); it != m_receivePacketThreads->end(); ++it)
-		it->second.join();
+	{
+		if(it->second.joinable())
+			it->second.join();
+	}
 	m_receivePacketThreads->clear();
 
 	m_listenSocket->ShutdownSocket(2);
 	m_listenSocket->SetActive(0);
-	m_listenThread->join();
+	if(m_listenThread->joinable())
+		m_listenThread->join();
 
 	//for (auto it = m_connectedClients->begin(); it != m_connectedClients->end(); ++it)
 	m_connectedClients->clear();
@@ -345,6 +349,8 @@ void ServerNetwork::ReceivePackets(ISocket* _socket)
 		{
 			if (NET_DEBUG > 0)
 				DebugLog("Failed to receive message from client.", LogSeverity::Warning);
+
+			_socket->SetActive(0);
 		}
 
 	}
@@ -524,6 +530,8 @@ void ServerNetwork::ResetNetworkEvents()
 	m_onPlayerDisconnected->clear();
 	m_onPlayerTimedOut->clear();
 	m_onServerShutdown->clear();
+
+	Clear();
 }
 
 void ServerNetwork::SetOnPlayerConnected(NetEvent& _function)
@@ -608,8 +616,9 @@ void ServerNetwork::NetPasswordAttempt(PacketHandler* _packetHandler, uint64_t& 
 
 		if (SDL_LockMutex(m_connectedClientsLock) == 0)
 		{
-			(*m_connectedClients)[_connection]->ShutdownSocket(2);
-			(*m_receivePacketThreads)[_connection].join();
+			(*m_connectedClients)[_connection]->ShutdownSocket(1);
+			if ((*m_receivePacketThreads)[_connection].joinable())
+				(*m_receivePacketThreads)[_connection].join();
 			SDL_UnlockMutex(m_connectedClientsLock);
 		}
 		else if (NET_DEBUG > 0)
@@ -627,7 +636,7 @@ void ServerNetwork::NetConnectionLost(NetConnection& _connection)
 	if (SDL_LockMutex(m_connectedClientsLock) == 0)
 	{
 		if(m_connectedClients->find(_connection) != m_connectedClients->end())
-			(*m_connectedClients)[_connection]->ShutdownSocket(2);
+			(*m_connectedClients)[_connection]->ShutdownSocket(1);
 		SDL_UnlockMutex(m_connectedClientsLock);
 	}
 	else if (NET_DEBUG > 0)
@@ -650,7 +659,9 @@ void ServerNetwork::NetConnectionLost(NetConnection& _connection)
 	else if (NET_DEBUG > 0)
 		DebugLog("Failed to lock timeOut. Error: %s.", LogSeverity::Error, SDL_GetError());
 
-	(*m_receivePacketThreads)[_connection].join();
+	if((*m_receivePacketThreads)[_connection].joinable())
+		(*m_receivePacketThreads)[_connection].join();
+	(*m_receivePacketThreads).erase(_connection);
 }
 
 void ServerNetwork::NetConnectionDisconnected(PacketHandler* _packetHandler, uint64_t& _id, NetConnection& _connection)
@@ -661,7 +672,7 @@ void ServerNetwork::NetConnectionDisconnected(PacketHandler* _packetHandler, uin
 	if (SDL_LockMutex(m_connectedClientsLock) == 0)
 	{
 		if (m_connectedClients->find(_connection) != m_connectedClients->end())
-			(*m_connectedClients)[_connection]->ShutdownSocket(2);
+			(*m_connectedClients)[_connection]->ShutdownSocket(1);
 		SDL_UnlockMutex(m_connectedClientsLock);
 	}
 	else if (NET_DEBUG > 0)
@@ -684,7 +695,8 @@ void ServerNetwork::NetConnectionDisconnected(PacketHandler* _packetHandler, uin
 	else if (NET_DEBUG > 0)
 		DebugLog("Failed to lock timeOut. Error: %s.", LogSeverity::Error, SDL_GetError());
 
-	(*m_receivePacketThreads)[_connection].join();
+	if ((*m_receivePacketThreads)[_connection].joinable())
+		(*m_receivePacketThreads)[_connection].join();
 	(*m_receivePacketThreads).erase(_connection);
 }
 
