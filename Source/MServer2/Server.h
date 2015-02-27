@@ -45,6 +45,8 @@ private:
 
 	void OnPingServer(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
 
+	void OnRequestDisconnect(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc);
+
 	std::string GetLocalTime();
 
 private:

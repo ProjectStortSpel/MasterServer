@@ -162,7 +162,7 @@ void ClientNetwork::Disconnect()
 
 	NetSleep(10);
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 
 	m_receiveThread->join();
 
@@ -313,7 +313,7 @@ void ClientNetwork::NetPasswordInvalid(PacketHandler* _packetHandler, uint64_t& 
 	if (NET_DEBUG > 0)
 		DebugLog("Invalid password. Connection refused to %s:%d.", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onPasswordInvalid, _connection, 0);
@@ -342,7 +342,7 @@ void ClientNetwork::NetConnectionServerFull(PacketHandler* _packetHandler, uint6
 	if (NET_DEBUG > 0)
 		DebugLog("Server full. Unable to connect to %s:%d.", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onServerFull, _connection, 0);
@@ -354,7 +354,7 @@ void ClientNetwork::NetConnectionLost(NetConnection& _connection)
 	if (NET_DEBUG > 0)
 		DebugLog("Connection lost. Disconnect from %s:%d.", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onTimedOutFromServer, _connection, 0);
@@ -365,7 +365,7 @@ void ClientNetwork::NetConnectionDisconnected(PacketHandler* _packetHandler, uin
 	if (NET_DEBUG > 0)
 		DebugLog("Disconnected from %s:%d.", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onDisconnectedFromServer, _connection, 0);
@@ -376,7 +376,7 @@ void ClientNetwork::NetConnectionKicked(PacketHandler* _packetHandler, uint64_t&
 	if (NET_DEBUG > 0)
 		DebugLog("Kicked from %s:%d. Disconnected", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onKickedFromServer, _connection, 0);
@@ -387,7 +387,7 @@ void ClientNetwork::NetConnectionBanned(PacketHandler* _packetHandler, uint64_t&
 	if (NET_DEBUG > 0)
 		DebugLog("Banned from %s:%d. Disconnected", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
-	m_socket->ShutdownSocket(2);
+	m_socket->ShutdownSocket(1);
 	//m_socket->SetActive(0);
 
 	TriggerEvent(m_onBannedFromServer, _connection, 0);

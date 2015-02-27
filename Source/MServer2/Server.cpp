@@ -57,7 +57,7 @@ Server::Server()
 
 	customHook = std::bind(&Server::OnMaxPlayerCountChanged, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("MAX_PLAYER_COUNT_CHANGED", customHook);
-	SDL_Log("%s \tHooking custom network hook \"MAX_PLAYER_COUNT_CHANGED\"", GetLocalTime().c_str());
+	Network::DebugLog("Hooking custom network hook \"MAX_PLAYER_COUNT_CHANGED\"", LogSeverity::Info);
 
 	customHook = std::bind(&Server::OnGameHasStarted, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	m_server.AddNetworkHook("GAME_STARTED", customHook);
@@ -79,6 +79,9 @@ Server::Server()
 	m_server.AddNetworkHook("PING_SERVER", customHook);
 	Network::DebugLog("Hooking custom network hook \"PING_SERVER\"", LogSeverity::Info);
 
+	customHook = std::bind(&Server::OnRequestDisconnect, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	m_server.AddNetworkHook("CLIENT_REQUEST_DISCONNECT", customHook);
+	Network::DebugLog("Hooking custom network hook \"CLIENT_REQUEST_DISCONNECT\"", LogSeverity::Info);
 
 	
 
@@ -266,7 +269,7 @@ void Server::OnMaxPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _i
 
 void Server::OnMaxPlayerCountChanged(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	SDL_Log("%s \t%s:%i: MAX_PLAYER_COUNT_CHANGED\n", GetLocalTime().c_str(), _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: MAX_PLAYER_COUNT_CHANGED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	int maxPlayers = _ph->ReadInt(_id);
 
@@ -346,7 +349,16 @@ void Server::OnGetServerInformation(Network::PacketHandler* _ph, uint64_t& _id, 
 
 void Server::OnPingServer(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	Network::DebugLog("%s:%i: PING_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: PING_SERVER", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+}
+
+void Server::OnRequestDisconnect(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
+{
+	Network::DebugLog("%s:%i: CLIENT_REQUEST_DISCONNECT", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+
+	auto id = _ph->StartPack("SERVER_GRANT_DISCONNECT");
+	auto packet = _ph->EndPack(id);
+	m_server.Send(packet, _nc);
 }
 
 std::string Server::GetLocalTime()
