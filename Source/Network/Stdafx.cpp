@@ -4,7 +4,7 @@ unsigned long long Network::hton_ll(unsigned long long src)
 {
 	static int typ = TYP_INIT;
 	unsigned char c;
-	union 
+	union
 	{
 		unsigned long long ull;
 		unsigned char c[8];

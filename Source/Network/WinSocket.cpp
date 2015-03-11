@@ -193,7 +193,7 @@ bool WinSocket::Connect(const char* _ipAddres, const int _port)
 		else if (cnt < 0)
 		{
 			errorCode = WSAGetLastError();
-			 if (errorCode == 10035)
+			if (errorCode == 10035)
 				break;
 		}
 

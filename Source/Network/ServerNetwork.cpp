@@ -18,16 +18,16 @@ ServerNetwork::ServerNetwork()
 	m_maxConnections = new unsigned int(64);
 	m_listenSocket = 0;
 
-	m_connectedClients		= new std::map<NetConnection, ISocket*>();
-	m_receivePacketThreads		= new std::map < NetConnection, std::thread >();
-	m_currentTimeOutIntervall	= new std::map < NetConnection, float >();
-	m_currentIntervallCounter	= new std::map < NetConnection, int >();
-	m_connectedClientsNC		= new std::vector<NetConnection>();
+	m_connectedClients = new std::map<NetConnection, ISocket*>();
+	m_receivePacketThreads = new std::map < NetConnection, std::thread >();
+	m_currentTimeOutIntervall = new std::map < NetConnection, float >();
+	m_currentIntervallCounter = new std::map < NetConnection, int >();
+	m_connectedClientsNC = new std::vector<NetConnection>();
 
-	m_connectedClientsLock		= SDL_CreateMutex();
-	m_dataSentLock			= SDL_CreateMutex();
-	m_dataReceiveLock		= SDL_CreateMutex();
-	m_timeOutLock			= SDL_CreateMutex();
+	m_connectedClientsLock = SDL_CreateMutex();
+	m_dataSentLock = SDL_CreateMutex();
+	m_dataReceiveLock = SDL_CreateMutex();
+	m_timeOutLock = SDL_CreateMutex();
 
 	m_onPlayerConnected = new std::vector<NetEvent>();
 	m_onPlayerDisconnected = new std::vector<NetEvent>();
@@ -135,28 +135,31 @@ bool ServerNetwork::Stop()
 	//Packet* p = m_packetHandler->EndPack(id);
 	//Broadcast(p);
 
-	NetSleep(10);
-
 	if (SDL_LockMutex(m_connectedClientsLock) == 0)
 	{
 		for (auto it = m_connectedClients->begin(); it != m_connectedClients->end(); ++it)
-			it->second->ShutdownSocket(1);
+			it->second->ShutdownSocket(2);
 
 		SDL_UnlockMutex(m_connectedClientsLock);
 	}
 	else
 		DebugLog("Failed to lock connectedClients. Error: %s.", LogSeverity::Error, SDL_GetError());
 
+	NetSleep(10);
+
 	for (auto it = m_receivePacketThreads->begin(); it != m_receivePacketThreads->end(); ++it)
 	{
-		if(it->second.joinable())
+		if (it->second.joinable())
 			it->second.join();
 	}
 	m_receivePacketThreads->clear();
 
 	m_listenSocket->ShutdownSocket(2);
 	m_listenSocket->SetActive(0);
-	if(m_listenThread->joinable())
+
+	NetSleep(10);
+
+	if (m_listenThread->joinable())
 		m_listenThread->join();
 
 	//for (auto it = m_connectedClients->begin(); it != m_connectedClients->end(); ++it)
@@ -203,7 +206,7 @@ void ServerNetwork::Broadcast(Packet* _packet, const NetConnection& _exclude)
 			*m_currentDataSent += bytesSent;
 			SDL_UnlockMutex(m_dataSentLock);
 		}
-		else if(NET_DEBUG > 0)
+		else if (NET_DEBUG > 0)
 			DebugLog("Failed to lock sentData. Error: %s.", LogSeverity::Error, SDL_GetError());
 	}
 
@@ -270,7 +273,7 @@ void ServerNetwork::Send(Packet* _packet, ISocket* _socket)
 	if (!_socket)
 		return;
 
-	if(_socket->GetActive() > 0)
+	if (_socket->GetActive() > 0)
 		bytesSent = _socket->Send((char*)_packet->Data, *_packet->Length);
 
 	if (bytesSent >= 0)
@@ -288,7 +291,7 @@ void ServerNetwork::Send(Packet* _packet, ISocket* _socket)
 	SAFE_DELETE(_packet);
 }
 
-void ServerNetwork::ReceivePackets(ISocket* _socket)
+void ServerNetwork::ReceivePackets(ISocket* _socket, const std::string _name)
 {
 	char* packetData = new char[MAX_PACKET_SIZE];
 	short nextPacketSize;
@@ -332,8 +335,8 @@ void ServerNetwork::ReceivePackets(ISocket* _socket)
 
 			if (SDL_LockMutex(m_dataReceiveLock) == 0)
 			{
-				*m_totalDataReceived	+= dataReceived;
-				*m_currentDataReceived	+= dataReceived;
+				*m_totalDataReceived += dataReceived;
+				*m_currentDataReceived += dataReceived;
 				SDL_UnlockMutex(m_dataReceiveLock);
 			}
 			else if (NET_DEBUG > 0)
@@ -377,7 +380,7 @@ void ServerNetwork::ListenForConnections(void)
 	while (m_listenSocket->GetActive() != 0)
 	{
 		NetSleep(50); // 50 ?
-		
+
 		if (!m_listenSocket)
 			m_listenSocket->SetActive(0);
 
@@ -418,7 +421,7 @@ void ServerNetwork::ListenForConnections(void)
 		if (NET_DEBUG > 0)
 			DebugLog("New incoming connection from %s:%d.", LogSeverity::Info, nc.GetIpAddress(), nc.GetPort());
 
-		(*m_receivePacketThreads)[nc] = std::thread(&ServerNetwork::ReceivePackets, this, newConnection);
+		(*m_receivePacketThreads)[nc] = std::thread(&ServerNetwork::ReceivePackets, this, newConnection, nc.GetIpAddress());
 
 		if (SDL_LockMutex(m_timeOutLock) == 0)
 		{
@@ -567,7 +570,6 @@ void ServerNetwork::SetOnServerShutdown(NetEvent& _function)
 }
 
 
-
 void ServerNetwork::NetPasswordAttempt(PacketHandler* _packetHandler, uint64_t& _id, NetConnection& _connection)
 {
 	char type = _packetHandler->GetNetTypeMessageId(_id);
@@ -584,8 +586,18 @@ void ServerNetwork::NetPasswordAttempt(PacketHandler* _packetHandler, uint64_t& 
 
 		if (SDL_LockMutex(m_connectedClientsLock) == 0)
 		{
-			(*m_connectedClients)[_connection]->SetActive(2);
-			m_connectedClientsNC->push_back(_connection);
+			if ((*m_connectedClients)[_connection])
+			{
+				(*m_connectedClients)[_connection]->SetActive(2);
+				m_connectedClientsNC->push_back(_connection);
+			}
+			else
+			{
+				m_connectedClients->erase(_connection);
+				if ((*m_receivePacketThreads)[_connection].joinable())
+					(*m_receivePacketThreads)[_connection].join();
+				return;
+			}
 
 			SDL_UnlockMutex(m_connectedClientsLock);
 		}
@@ -598,7 +610,7 @@ void ServerNetwork::NetPasswordAttempt(PacketHandler* _packetHandler, uint64_t& 
 		uint64_t id3 = _packetHandler->StartPack(NetTypeMessageId::ID_REMOTE_CONNECTION_ACCEPTED);
 		_packetHandler->WriteString(id3, _connection.GetIpAddress());
 		Packet* broadcastPacket = _packetHandler->EndPack(id3);
-		
+
 		Broadcast(broadcastPacket, _connection);
 
 		TriggerEvent(m_onPlayerConnected, _connection, 0);
@@ -635,7 +647,7 @@ void ServerNetwork::NetConnectionLost(NetConnection& _connection)
 
 	if (SDL_LockMutex(m_connectedClientsLock) == 0)
 	{
-		if(m_connectedClients->find(_connection) != m_connectedClients->end())
+		if (m_connectedClients->find(_connection) != m_connectedClients->end())
 			(*m_connectedClients)[_connection]->ShutdownSocket(1);
 		SDL_UnlockMutex(m_connectedClientsLock);
 	}
@@ -659,7 +671,7 @@ void ServerNetwork::NetConnectionLost(NetConnection& _connection)
 	else if (NET_DEBUG > 0)
 		DebugLog("Failed to lock timeOut. Error: %s.", LogSeverity::Error, SDL_GetError());
 
-	if((*m_receivePacketThreads)[_connection].joinable())
+	if ((*m_receivePacketThreads)[_connection].joinable())
 		(*m_receivePacketThreads)[_connection].join();
 	(*m_receivePacketThreads).erase(_connection);
 }

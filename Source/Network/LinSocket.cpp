@@ -1,7 +1,7 @@
 #ifndef WIN32
 
 #include "LinSocket.h"
-  
+
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -32,12 +32,12 @@ LinSocket::LinSocket()
 
 	if (*m_socket != -1)
 	{
-	  
-	    *m_remoteAddress  = "";
-	    *m_remotePort = 0;
-	    *m_localPort = 0;
-	    *m_active = 0;
-	  
+
+		*m_remoteAddress = "";
+		*m_remotePort = 0;
+		*m_localPort = 0;
+		*m_active = 0;
+
 		g_noActiveSockets++;
 		if (NET_DEBUG > 0)
 			DebugLog("New linsocket created.", LogSeverity::Info);
@@ -65,11 +65,11 @@ LinSocket::LinSocket(int _socket)
 
 	if (*m_socket != -1)
 	{
-	    *m_remoteAddress = "";
-	    *m_remotePort = 0;
-	    *m_localPort = 0;
-	    *m_active = 0;
-	  
+		*m_remoteAddress = "";
+		*m_remotePort = 0;
+		*m_localPort = 0;
+		*m_active = 0;
+
 		g_noActiveSockets++;
 		if (NET_DEBUG > 0)
 			DebugLog("New linsocket created.", LogSeverity::Info);
@@ -97,12 +97,12 @@ LinSocket::LinSocket(int _domain, int _type, int _protocol)
 
 	if (*m_socket != -1)
 	{
-	    *m_remoteAddress = "";
-	    *m_remotePort = 0;
-	    *m_localPort = 0;
-	    *m_active = 0;
-	  
-	  
+		*m_remoteAddress = "";
+		*m_remotePort = 0;
+		*m_localPort = 0;
+		*m_active = 0;
+
+
 		g_noActiveSockets++;
 		if (NET_DEBUG > 0)
 			DebugLog("New linsocket created.", LogSeverity::Info);
@@ -242,7 +242,7 @@ bool LinSocket::Bind(const int _port)
 	address.sin_port = htons(_port);
 	address.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(*m_socket, (sockaddr*)&address, sizeof(address)) == -1	)
+	if (bind(*m_socket, (sockaddr*)&address, sizeof(address)) == -1)
 	{
 		if (NET_DEBUG > 0)
 			DebugLog("Failed to bind socket. Error: %s.", LogSeverity::Error, strerror(errno));
@@ -323,10 +323,9 @@ ISocket* LinSocket::Accept(void)
 
 int LinSocket::Send(char* _buffer, int _length, int _flags)
 {
-
-#if !defined(__IOS__) && !defined(__OSX__)
+#if !defined(__OSX__) && !defined(__IOS__)
 	if (_flags == 0)
-		_flags == MSG_NOSIGNAL;
+		_flags = MSG_NOSIGNAL;
 #endif
 
 	short len = htons(_length);

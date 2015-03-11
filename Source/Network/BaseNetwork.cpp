@@ -68,7 +68,7 @@ BaseNetwork::~BaseNetwork()
 			SAFE_DELETE(packet);
 			m_customPackets->pop();
 		}
-		
+
 		SAFE_DELETE(m_customPackets);
 
 		for (unsigned int i = 0; i < m_inactivePackets->size(); ++i)
@@ -84,7 +84,7 @@ BaseNetwork::~BaseNetwork()
 
 	}
 	SDL_DestroyMutex(m_customPacketLock);
-	
+
 	if (SDL_LockMutex(m_systemPacketLock) == 0)
 	{
 		for (unsigned int i = 0; i < m_systemPackets->size(); ++i)
@@ -162,14 +162,14 @@ void BaseNetwork::Update(float _dt)
 	UpdateNetUsage(_dt);
 	UpdateTimeOut(_dt);
 
-	
+
 	size_t noSysPackets = 0;
 	if (SDL_LockMutex(m_systemPacketLock) == 0)
 	{
 		noSysPackets = m_systemPackets->size();
 		SDL_UnlockMutex(m_systemPacketLock);
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Failed to lock system packet lock. Error: %s.", LogSeverity::Error, SDL_GetError());
 
 
@@ -199,9 +199,6 @@ void BaseNetwork::Update(float _dt)
 		SAFE_DELETE(p);
 		m_packetHandler->EndUnpack(id);
 	}
-
-
-
 
 }
 
@@ -305,7 +302,7 @@ int BaseNetwork::PopAndExecutePacket(void)
 		SAFE_DELETE(p);
 		return noCustomPackets;
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Failed to lock custom packet mutex. Error: %s.", LogSeverity::Error, SDL_GetError());
 
 	return -1;

@@ -11,11 +11,11 @@ using namespace Network;
 
 PacketHandler::PacketHandler()
 {
-	m_packetSendInfoMap		= new std::map<uint64_t, PacketSendInfo*>();
-	m_packetReceiveInfoMap	= new std::map<uint64_t, PacketReceiveInfo*>();
+	m_packetSendInfoMap = new std::map<uint64_t, PacketSendInfo*>();
+	m_packetReceiveInfoMap = new std::map<uint64_t, PacketReceiveInfo*>();
 
-	m_sendLock		= SDL_CreateMutex();
-	m_receiveLock	= SDL_CreateMutex();
+	m_sendLock = SDL_CreateMutex();
+	m_receiveLock = SDL_CreateMutex();
 
 }
 
@@ -61,7 +61,9 @@ PacketHandler::PacketSendInfo* PacketHandler::GetPacketSendInfo(uint64_t _id)
 	{
 
 		if (m_packetSendInfoMap->find(_id) != m_packetSendInfoMap->end())
+		{
 			result = m_packetSendInfoMap->at(_id);
+		}
 		SDL_UnlockMutex(m_sendLock);
 
 	}
@@ -101,7 +103,7 @@ char PacketHandler::GetNetTypeMessageId(uint64_t _id)
 
 	if (pri)
 		return pri->PacketData->Data[0];
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to get NetTypeMessageId from invalid packet id.", LogSeverity::Error);
 
 	return -1;
@@ -109,7 +111,7 @@ char PacketHandler::GetNetTypeMessageId(uint64_t _id)
 
 uint64_t PacketHandler::StartPack(const char* _functionName)
 {
-
+	// THIS IS PROBLEM!
 	PacketSendInfo* psi = new PacketSendInfo();
 	if (psi)
 	{
@@ -117,6 +119,7 @@ uint64_t PacketHandler::StartPack(const char* _functionName)
 
 		if (SDL_LockMutex(m_sendLock) == 0)
 		{
+
 			(*m_packetSendInfoMap)[id] = psi;
 			SDL_UnlockMutex(m_sendLock);
 
@@ -139,7 +142,7 @@ uint64_t PacketHandler::StartPack(const char* _functionName)
 
 uint64_t PacketHandler::StartPack(char _identifier)
 {
-
+	// THIS IS PROBLEM!
 	PacketSendInfo* psi = new PacketSendInfo();
 	if (psi)
 	{
@@ -153,14 +156,14 @@ uint64_t PacketHandler::StartPack(char _identifier)
 			psi->Position = psi->Data;
 			WriteByte(id, _identifier);
 		}
-		else if(NET_DEBUG > 0)
+		else if (NET_DEBUG > 0)
 			DebugLog("Failed to lock send mutex. Error: %s", LogSeverity::Error, SDL_GetError());
 
 		return id;
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to start pack on invalid packet id.", LogSeverity::Error);
-	
+
 	return -1;
 }
 
@@ -177,18 +180,24 @@ Packet* PacketHandler::EndPack(uint64_t _id)
 		memcpy(p->Data, psi->Data, length);
 		*p->Length = length;
 
-
+		// remove psi?
 		if (SDL_LockMutex(m_sendLock) == 0)
 		{
+			// remove but dont deallocate
+			//might work
+			//PacketSendInfo* to_be_deleted = m_packetSendInfoMap->at( _id );
+
+			//might work
+			SAFE_DELETE(psi);
 			m_packetSendInfoMap->erase(_id);
 			SDL_UnlockMutex(m_sendLock);
 		}
-		else if(NET_DEBUG > 0)
+		else if (NET_DEBUG > 0)
 			DebugLog("Failed to lock send mutex. Error: %s", LogSeverity::Error, SDL_GetError());
 
 		return p;
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to end pack on invalid packet id.", LogSeverity::Error);
 
 	return 0;
@@ -213,7 +222,7 @@ uint64_t PacketHandler::StartUnpack(Packet* _packet)
 
 		return id;
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to end pack on invalid packet id.", LogSeverity::Error);
 
 	return -1;
@@ -341,7 +350,7 @@ void PacketHandler::WriteString(uint64_t _id, const char* _string)
 			psi->Position += length;
 		}
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to write string to invalid packet id", LogSeverity::Error);
 }
 
@@ -433,7 +442,7 @@ uint64_t PacketHandler::ReadInt64(uint64_t _id)
 			pri->Position += sizeof(uint64_t);
 		}
 	}
-	else if(NET_DEBUG > 0)
+	else if (NET_DEBUG > 0)
 		DebugLog("Tried to read uint64_t from invalid packet id", LogSeverity::Error);
 
 	return var;

@@ -128,7 +128,7 @@ bool Server::Stop()
 
 void Server::OnConnectedToServer(Network::NetConnection _nc, const char* _message)
 {
-	Network::DebugLog("%s:%i: CONNECTED_TO_SERVER\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: CONNECTED_TO_SERVER", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{
 		m_serverInfo[_nc.GetIpAddress()].TimeOut = 0.f;

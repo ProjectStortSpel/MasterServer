@@ -89,13 +89,13 @@ namespace Network
 		std::queue<Packet*>* m_inactivePackets;
 
 	private:
-		
+
 		SDL_mutex* m_systemPacketLock;
 
 		std::queue<Packet*>* m_customPackets;
 		std::queue<Packet*>* m_systemPackets;
 
-		
+
 
 	};
 

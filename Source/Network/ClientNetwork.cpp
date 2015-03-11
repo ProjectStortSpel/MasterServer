@@ -97,7 +97,7 @@ ClientNetwork::~ClientNetwork()
 
 	SAFE_DELETE(m_currentTimeOutIntervall);
 	SAFE_DELETE(m_currentIntervallCounter);
-	
+
 	SAFE_DELETE(m_receiveThread);
 }
 
@@ -134,6 +134,7 @@ bool ClientNetwork::Connect()
 	}
 
 	*m_connected = true;
+	m_socket->SetActive(1);
 
 	uint64_t id = m_packetHandler->StartPack(NetTypeMessageId::ID_PASSWORD_ATTEMPT);
 	m_packetHandler->WriteString(id, m_password->c_str());
@@ -141,7 +142,7 @@ bool ClientNetwork::Connect()
 
 	Send(p);
 
-	*m_receiveThread = std::thread(&ClientNetwork::ReceivePackets, this);
+	*m_receiveThread = std::thread(&ClientNetwork::ReceivePackets, this, m_remoteAddress->c_str());
 
 	return true;
 }
@@ -158,25 +159,27 @@ void ClientNetwork::Disconnect()
 	Packet* packet = m_packetHandler->EndPack(id);
 	Send(packet);
 
-	NetSleep(10);
-
 	m_socket->ShutdownSocket(1);
 
-	if(m_receiveThread->joinable())
+	NetSleep(10);
+
+	if (m_receiveThread->joinable())
 		m_receiveThread->join();
+
+	*m_connected = false;
 
 	NetConnection nc = m_socket->GetNetConnection();
 	TriggerEvent(m_onDisconnectedFromServer, nc, 0);
 
-	*m_connected = false;
+	SAFE_DELETE(m_socket);
 }
 
-void ClientNetwork::ReceivePackets()
+void ClientNetwork::ReceivePackets(const std::string _name)
 {
 	short dataReceived;
 	bool threadRunning = true;
 
-	while (true)
+	while (m_socket->GetActive() > 0)
 	{
 		dataReceived = m_socket->Receive(m_packetData, MAX_PACKET_SIZE);
 
@@ -199,15 +202,15 @@ void ClientNetwork::ReceivePackets()
 		}
 		else if (dataReceived == 0)
 		{
-			break;
+			m_socket->SetActive(0);
 		}
 		else
 		{
-
+			m_socket->SetActive(0);
 		}
 	}
 
-	m_socket->SetActive(0);
+
 
 }
 
@@ -229,7 +232,7 @@ void ClientNetwork::Send(Packet* _packet)
 	}
 
 
-	float bytesSent = m_socket->Send((char*)_packet->Data, *_packet->Length);
+	int bytesSent = m_socket->Send((char*)_packet->Data, *_packet->Length);
 
 	if (bytesSent > 0)
 	{
@@ -356,9 +359,16 @@ void ClientNetwork::NetConnectionLost(NetConnection& _connection)
 		DebugLog("Connection lost. Disconnect from %s:%d.", LogSeverity::Info, _connection.GetIpAddress(), _connection.GetPort());
 
 	m_socket->ShutdownSocket(1);
-	//m_socket->SetActive(0);
 
+	NetSleep(10);
+
+	if (m_receiveThread->joinable())
+		m_receiveThread->join();
+
+	*m_connected = false;
 	TriggerEvent(m_onTimedOutFromServer, _connection, 0);
+
+	SAFE_DELETE(m_socket);
 }
 
 void ClientNetwork::NetConnectionDisconnected(PacketHandler* _packetHandler, uint64_t& _id, NetConnection& _connection)
@@ -467,7 +477,7 @@ void ClientNetwork::NetRemoteConnectionBanned(PacketHandler* _packetHandler, uin
 
 void ClientNetwork::SetOnConnectedToServer(NetEvent& _function)
 {
-	if(NET_DEBUG > 0)
+	if (NET_DEBUG > 0)
 		DebugLog("Hooking function to OnConnectedToServer.", LogSeverity::Info);
 
 	m_onConnectedToServer->push_back(_function);
