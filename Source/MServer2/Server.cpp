@@ -9,7 +9,7 @@ Server::Server()
 	Network::NET_DEBUG = 1;
 	m_server.SetServerPassword("DefaultMasterPassword");
 	m_server.SetIncomingPort(5509);
-	m_server.SetMaxTimeOutIntervall(60);
+	m_server.SetMaxTimeOutIntervall(15);
 	m_server.SetMaxTimeOutCounter(2);
 
 	Network::NetEvent  hook;
@@ -153,7 +153,7 @@ void Server::OnTimedOutFromServer(Network::NetConnection _nc, const char* _messa
 
 void Server::OnAddToDatabase(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	Network::DebugLog("%s:%i: ADD_TO_DATABASE\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: ADD_TO_DATABASE", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	int port = _ph->ReadInt(_id);
 	bool pwProtected = _ph->ReadByte(_id);
@@ -212,7 +212,7 @@ void Server::OnRemoveFromDatabase(Network::PacketHandler* _ph, uint64_t& _id, Ne
 
 void Server::OnPlayerCountIncreased(Network::PacketHandler* _ph, uint64_t& _id, Network::NetConnection& _nc)
 {
-	Network::DebugLog("%s:%i: PLAYER_COUNT_INCREASED\n", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
+	Network::DebugLog("%s:%i: PLAYER_COUNT_INCREASED", LogSeverity::Info, _nc.GetIpAddress(), _nc.GetPort());
 
 	if (m_serverInfo.find(_nc.GetIpAddress()) != m_serverInfo.end())
 	{

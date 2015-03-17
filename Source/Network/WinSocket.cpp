@@ -140,7 +140,7 @@ bool WinSocket::CloseSocket(void)
 }
 bool WinSocket::ShutdownSocket(int _how)
 {
-	if (shutdown(m_socket, _how) != 0)
+	if (shutdown(m_socket, _how) > 0)
 	{
 		int errorCode = WSAGetLastError();
 
@@ -353,7 +353,7 @@ int WinSocket::Send(char* _buffer, int _length, int _flags)
 int WinSocket::Receive(char* _buffer, int _length, int _flags)
 {
 	short len;
-	int headerLen = recv(m_socket, (char*)&len, 2, MSG_WAITALL);
+	int headerLen = recv(m_socket, (char*)&len, 2, 0);
 	short totalDataReceived = 0;
 
 	if (headerLen == 2)
