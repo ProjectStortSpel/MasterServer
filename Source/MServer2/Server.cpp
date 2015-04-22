@@ -83,7 +83,7 @@ Server::Server()
 	m_server.AddNetworkHook("CLIENT_REQUEST_DISCONNECT", customHook);
 	Network::DebugLog("Hooking custom network hook \"CLIENT_REQUEST_DISCONNECT\"", LogSeverity::Info);
 
-	
+	m_database.Login();
 
 }
 

@@ -278,3 +278,39 @@ void SQLConnection::SetServerPort(ServerInfo& _info)
 
 	CloseConnection();
 }
+
+int SQLConnection::Login()
+{
+	OpenConnection();
+	int userId = -1;
+
+	try
+	{
+		// Updates the number of spectators currently in the game
+		otl_stream sqlLogin(
+			200,
+
+			"SELECT UserId FROM users WHERE Username=:Username<char[15]> AND Password=:Password<char[31]>",
+			m_connection);
+
+		std::string pw = "qwertyuiopasdfghjklzxcvbnmqwer";
+		int size = pw.size();
+
+		sqlLogin << "ThePettsoN";
+		sqlLogin << "qwertyuiopasdfghjklzxcvbnmqwer";
+
+		while (!sqlLogin.eof())
+		{
+			sqlLogin >> userId;
+		}
+
+	}
+	catch (otl_exception& e)
+	{
+		std::cout << e.msg;
+	}
+
+	CloseConnection();
+	
+	return userId;
+}

@@ -26,6 +26,7 @@ public:
 	void SetGameStarted(ServerInfo& _info);
 	void SetPasswordProtected(ServerInfo& _info);
 	void SetServerPort(ServerInfo& _info);
+	int Login();
 
 private:
 
